@@ -430,7 +430,7 @@ bool QRFactorization::SolveEigenByHouseHolderQR(const Eigen::MatrixXd& mat,Eigen
     return true;
 }
 
-bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenValue){
+bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::VectorXd& eigenValue){
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     if(rows !=cols || rows<1){
@@ -444,31 +444,36 @@ bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eige
     int itUpper =size*size;
     double mu = 0;
     size_t currentSize = size;
+    eigenValue=Eigen::VectorXd(size,1);
+    if(size==1){
+        eigenValue(0,0)=mat(0,0);
+        return true;
+    }
     for(itCount=0;itCount<itUpper;itCount++){
         mu = hessenbergMat(currentSize-1,currentSize-1);
-        hessenbergMat = hessenbergMat - mu*MatrixXd::Identity(size,size);
+        hessenbergMat = hessenbergMat - mu*MatrixXd::Identity(currentSize,currentSize);
         QRFactorization::HessenbergGivenMethod(hessenbergMat,q,r);
         hessenbergMat = r*q;
-        hessenbergMat = hessenbergMat + mu*MatrixXd::Identity(size,size);
-
-        if(IsMatLowerTriangleZero(hessenbergMat)){
-            break;
-        }
+        hessenbergMat = hessenbergMat + mu*MatrixXd::Identity(currentSize,currentSize);
         if(std::abs(hessenbergMat(currentSize-1,currentSize-2))<dZero){
-            hessenbergMat(currentSize-1,currentSize-2) = 0;
-            hessenbergMat(currentSize-2,currentSize-1) = 0;
             if(currentSize>2){
+                eigenValue(currentSize-1,0) = hessenbergMat(currentSize-1,currentSize-1);
                 currentSize--;
+                hessenbergMat = hessenbergMat.topLeftCorner(currentSize,currentSize).eval();
+            }
+            else{
+                eigenValue(0,0) = hessenbergMat(0,0);
+                eigenValue(1,0) = hessenbergMat(1,1);
+                break;
             }
         }
     }
     if(itCount>=itUpper){
         return false;
     }
-    eigenValue = hessenbergMat.diagonal().eval();
+
     std::sort(eigenValue.data(), eigenValue.data() + eigenValue.size(),
               [](const double a, const double b) -> bool { return std::abs(a) >= std::abs(b); });
-
     return true;
 
 }

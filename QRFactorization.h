@@ -28,6 +28,6 @@ public:
     static bool GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd& kernel);
     static bool GetMatrixImage(const Eigen::MatrixXd& mat,Eigen::MatrixXd& image);
     static bool SolveEigenByHouseHolderQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenValue,Eigen::MatrixXd& eigenVec);
-    static bool SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenValue);
+    static bool SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::VectorXd& eigenValue);
 };
 #endif //MAIN_QRFACTORIZATION_H
