@@ -21,9 +21,9 @@ using std::cout;
 inline float sign(float val) {
     return val>0.0?1.0:-1.0;
 }
-const double dZero = 0.000000001;
 
-bool QRFactorization::NormalGramSchmidt(const Eigen::MatrixXd& mat, Eigen::MatrixXd& Q, Eigen::MatrixXd& R){
+
+bool QRFactorization::NormalGramSchmidt(const Eigen::MatrixXd& mat, Eigen::MatrixXd& Q, Eigen::MatrixXd& R,double eps){
     int rols = mat.rows();
     int cols = mat.cols();
     Q = mat;
@@ -39,7 +39,7 @@ bool QRFactorization::NormalGramSchmidt(const Eigen::MatrixXd& mat, Eigen::Matri
     }
     return true;
 }
-bool QRFactorization::ModifiedGramSchmidt(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R) {
+bool QRFactorization::ModifiedGramSchmidt(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R,double eps) {
     int cols = mat.cols();
     Q = mat;
     R = Eigen::MatrixXd(cols, cols);
@@ -58,7 +58,7 @@ bool QRFactorization::ModifiedGramSchmidt(const Eigen::MatrixXd& mat,Eigen::Matr
     return true;
 }
 
-bool QRFactorization::HouseHolderMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R ) {
+bool QRFactorization::HouseHolderMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R,double eps ) {
     int cols = mat.cols();
     int rows = mat.rows();
     Q = Eigen::MatrixXd(rows, rows);
@@ -105,7 +105,7 @@ inline void GetGivensMatrix(T x1,T x2,Matrix2Xd& givensMatrix){
     givensMatrix(1,0)=-sin;
     givensMatrix(1,1)=cos;
 }
-bool QRFactorization::GivensMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R ){
+bool QRFactorization::GivensMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R,double eps ){
     int cols = mat.cols();
     int rows = mat.rows();
     Q = Eigen::MatrixXd(rows, rows);
@@ -126,7 +126,7 @@ bool QRFactorization::GivensMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q
     return true;
 }
 
-bool QRFactorization::HessenbergGivenMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R ){
+bool QRFactorization::HessenbergGivenMethod(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& R,double eps ){
     int cols = mat.cols();
     int rows = mat.rows();
     Q = Eigen::MatrixXd(rows, rows);
@@ -147,7 +147,7 @@ bool QRFactorization::HessenbergGivenMethod(const Eigen::MatrixXd& mat,Eigen::Ma
     return true;
 }
 
-bool QRFactorization::HessenbergDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& hessen){
+bool QRFactorization::HessenbergDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd& Q,Eigen::MatrixXd& hessen,double eps){
     hessen = mat;
     int cols = hessen.cols();
     int rows = hessen.rows();
@@ -172,7 +172,7 @@ bool QRFactorization::HessenbergDecomposition(const Eigen::MatrixXd& mat,Eigen::
     return true;
 }
 
-bool QRFactorization::LUDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd& L,Eigen::MatrixXd& U){
+bool QRFactorization::LUDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd& L,Eigen::MatrixXd& U,double eps){
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     if(rows!=cols || cols<1){
@@ -182,7 +182,7 @@ bool QRFactorization::LUDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd
     U = mat;
     for(int c=0;c<cols;c++){
         MatrixXd::value_type current = U(c,c);
-        if(std::abs(current)<dZero){
+        if(std::abs(current)<eps){
             return false;
         }
         for(int r=c+1;r<rows;r++){
@@ -195,7 +195,7 @@ bool QRFactorization::LUDecomposition(const Eigen::MatrixXd& mat,Eigen::MatrixXd
     };
     return true;
 }
-bool QRFactorization::LUDecompositionColPivot(const Eigen::MatrixXd& mat,Eigen::MatrixXd& P,Eigen::MatrixXd& L,Eigen::MatrixXd& U){
+bool QRFactorization::LUDecompositionColPivot(const Eigen::MatrixXd& mat,Eigen::MatrixXd& P,Eigen::MatrixXd& L,Eigen::MatrixXd& U,double eps){
     size_t rows = mat.rows();
     size_t cols = mat.cols();
 
@@ -214,7 +214,7 @@ bool QRFactorization::LUDecompositionColPivot(const Eigen::MatrixXd& mat,Eigen::
             L.row(maxIndex).head(c).swap(L.row(c).head(c));
             P.row(maxIndex).swap(P.row(c));
         }
-        if(std::abs(U(r1,c))<dZero){
+        if(std::abs(U(r1,c))<eps){
             continue;
         }
         for(int r = r1+1 ;r<rows;r++){
@@ -227,7 +227,7 @@ bool QRFactorization::LUDecompositionColPivot(const Eigen::MatrixXd& mat,Eigen::
     }
     return true;
 }
-bool QRFactorization::LUDecompositionFullPivot(const Eigen::MatrixXd& mat,Eigen::MatrixXd& P,Eigen::MatrixXd& L,Eigen::MatrixXd& U,Eigen::MatrixXd& Q) {
+bool QRFactorization::LUDecompositionFullPivot(const Eigen::MatrixXd& mat,Eigen::MatrixXd& P,Eigen::MatrixXd& L,Eigen::MatrixXd& U,Eigen::MatrixXd& Q,double eps) {
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     P = MatrixXd(rows, rows);
@@ -244,7 +244,7 @@ bool QRFactorization::LUDecompositionFullPivot(const Eigen::MatrixXd& mat,Eigen:
         maxCoeffCol += k;
 
         double current = lu(maxCoeffRow, maxCoeffCol);
-        if (std::abs(current) < dZero) {
+        if (std::abs(current) < eps) {
             break;
         }
         if (maxCoeffRow != k || maxCoeffCol != k) {
@@ -269,7 +269,7 @@ bool QRFactorization::LUDecompositionFullPivot(const Eigen::MatrixXd& mat,Eigen:
     return true;
 }
 
-bool QRFactorization::CholeskyFactorization(const Eigen::MatrixXd&  HermitianMatrix,Eigen::MatrixXd& R) {
+bool QRFactorization::CholeskyFactorization(const Eigen::MatrixXd&  HermitianMatrix,Eigen::MatrixXd& R,double eps) {
     int rows = HermitianMatrix.rows();
     int cols = HermitianMatrix.cols();
     if (rows != cols || rows < 1) {
@@ -290,7 +290,7 @@ bool QRFactorization::CholeskyFactorization(const Eigen::MatrixXd&  HermitianMat
     R(size-1,size-1) = sqrt(R(size-1,size-1));
     return true;
 }
-bool QRFactorization::PowerIteratorMethod(const Eigen::MatrixXd& squaredMatrix,Eigen::MatrixXd::value_type eigenValue,Eigen::VectorXd& eigenVector){
+bool QRFactorization::PowerIteratorMethod(const Eigen::MatrixXd& squaredMatrix,Eigen::MatrixXd::value_type eigenValue,Eigen::VectorXd& eigenVector,double eps){
     size_t rows = squaredMatrix.rows();
     size_t cols = squaredMatrix.cols();
     if(rows!=cols || cols<1){
@@ -305,7 +305,7 @@ bool QRFactorization::PowerIteratorMethod(const Eigen::MatrixXd& squaredMatrix,E
     MatrixXd::value_type  laseValue = 0;
     int i=0;
     int iteratorCount = rows*10;
-    while(i++<iteratorCount&& abs(eigenValue-laseValue)>(dZero)){
+    while(i++<iteratorCount&& abs(eigenValue-laseValue)>(eps)){
         vec = squaredMatrix*vec;
         vec.normalize();
         laseValue = eigenValue;
@@ -314,7 +314,7 @@ bool QRFactorization::PowerIteratorMethod(const Eigen::MatrixXd& squaredMatrix,E
     eigenVector = vec;
     return i<iteratorCount;
 }
-inline bool IsMatLowerTriangleZero(const Eigen::MatrixXd& mat,const int matSize=-1,const double zero=(dZero*10)){
+inline bool IsMatLowerTriangleZero(const Eigen::MatrixXd& mat,const int matSize=-1,const double zero=QRFactorization::doubleEps){
     int size = matSize;
     if(size<1){
         size = std::min(mat.cols(),mat.rows());
@@ -334,7 +334,7 @@ inline void FillLowerZero(Eigen::MatrixXd& mat,size_t size){
         mat.col(i).tail(size-i-1).setZero();
     }
 }
-bool QRFactorization::SolveEigenByQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenVectors,Eigen::MatrixXd& eigenValues) {
+bool QRFactorization::SolveEigenByQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenVectors,Eigen::MatrixXd& eigenValues,double eps) {
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     if (rows != cols || cols < 1) {
@@ -365,7 +365,7 @@ bool QRFactorization::SolveEigenByQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd&
     while (eigenValueIndex < eigenValue.size()) {
         int count = 1;
         int uniqueEnd = eigenValueIndex + 1;
-        while (uniqueEnd < eigenValue.size() && std::abs(eigenValue[uniqueEnd] - eigenValue[eigenValueIndex]) < dZero) {
+        while (uniqueEnd < eigenValue.size() && std::abs(eigenValue[uniqueEnd] - eigenValue[eigenValueIndex]) < eps) {
             uniqueEnd++;
             count++;
         }
@@ -386,7 +386,7 @@ bool QRFactorization::SolveEigenByQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd&
     return index < iteratorCount;
 }
 
-bool QRFactorization::SolveEigenByHouseHolderQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenValue,Eigen::MatrixXd& eigenVec){
+bool QRFactorization::SolveEigenByHouseHolderQR(const Eigen::MatrixXd& mat,Eigen::MatrixXd& eigenValue,Eigen::MatrixXd& eigenVec,double eps){
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     if(rows !=cols || rows<1){
@@ -430,7 +430,7 @@ bool QRFactorization::SolveEigenByHouseHolderQR(const Eigen::MatrixXd& mat,Eigen
     return true;
 }
 
-bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::VectorXd& eigenValue){
+bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eigen::VectorXd& eigenValue,double eps){
     size_t rows = mat.rows();
     size_t cols = mat.cols();
     if(rows !=cols || rows<1){
@@ -455,7 +455,7 @@ bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eige
         QRFactorization::HessenbergGivenMethod(hessenbergMat,q,r);
         hessenbergMat = r*q;
         hessenbergMat = hessenbergMat + mu*MatrixXd::Identity(currentSize,currentSize);
-        if(std::abs(hessenbergMat(currentSize-1,currentSize-2))<dZero){
+        if(std::abs(hessenbergMat(currentSize-1,currentSize-2))<eps){
             if(currentSize>2){
                 eigenValue(currentSize-1,0) = hessenbergMat(currentSize-1,currentSize-1);
                 currentSize--;
@@ -474,10 +474,26 @@ bool QRFactorization::SolveEigenByHouseHolderQR2(const Eigen::MatrixXd& mat,Eige
 
     std::sort(eigenValue.data(), eigenValue.data() + eigenValue.size(),
               [](const double a, const double b) -> bool { return std::abs(a) >= std::abs(b); });
+    VectorXd eigenVec;
+    bool flag;
+    for(size_t i=0;i<size;i++){
+        MatrixXd  vec;
+        flag = QRFactorization::GetMatrixKernel(mat-eigenValue(i,0)*MatrixXd::Identity(size,size),vec);
+        if(flag){
+            eigenVec = vec.col(0).normalized();
+            double norm = (mat*eigenVec-eigenValue(i,0)*eigenVec).norm();
+            if(norm>0.001){
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
     return true;
 
 }
-bool QRFactorization::GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd& kernel) {
+bool QRFactorization::GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd& kernel,double eps) {
     size_t rows ,cols ;
     size_t size;
     rows = mat.rows();
@@ -490,7 +506,7 @@ bool QRFactorization::GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd
     QRFactorization::LUDecompositionFullPivot(mat,p,l,u,q);
     size_t pivotCount = 0;
     for(pivotCount= 0;pivotCount<size;pivotCount++){
-        if( std::abs(u(pivotCount,pivotCount))<dZero){
+        if( std::abs(u(pivotCount,pivotCount))<eps*100){
             break;
         }
     }
@@ -503,7 +519,7 @@ bool QRFactorization::GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd
         current(i,0)=1;
         for(int j = i-1;j>=0;j--){
             double dot = u.row(j)*current;
-            if(std::abs(dot)<dZero || std::abs(u(j,j))<dZero ){
+            if(std::abs(dot)<eps || std::abs(u(j,j))<eps ){
                 continue;
             }else{
                 current(j,0) = -dot/u(j,j);
@@ -512,11 +528,13 @@ bool QRFactorization::GetMatrixKernel(const Eigen::MatrixXd& mat,Eigen::MatrixXd
         current.normalize();
         kernel.col(i-pivotCount)=current;
     }
+    if(kernel.cols()<1||kernel.rows()<1){
+        return false;
+    }
     kernel = q*kernel;
-    std::cout<<"res:\n"<< mat*kernel<<endl;
     return true;
 }
-bool QRFactorization::GetMatrixImage(const Eigen::MatrixXd& mat,Eigen::MatrixXd& image){
+bool QRFactorization::GetMatrixImage(const Eigen::MatrixXd& mat,Eigen::MatrixXd& image,double eps){
     size_t rows ,cols;
     size_t size;
     rows = mat.rows();
@@ -529,7 +547,7 @@ bool QRFactorization::GetMatrixImage(const Eigen::MatrixXd& mat,Eigen::MatrixXd&
     QRFactorization::LUDecompositionFullPivot(mat,p,l,u,q);
     size_t pivotCount = 0;
     for(pivotCount= 0;pivotCount<size;pivotCount++){
-        if( std::abs(u(pivotCount,pivotCount))<dZero){
+        if( std::abs(u(pivotCount,pivotCount))<eps){
             break;
         }
     }
@@ -539,7 +557,7 @@ bool QRFactorization::GetMatrixImage(const Eigen::MatrixXd& mat,Eigen::MatrixXd&
     image =  p.transpose()*l * u.leftCols(pivotCount).eval();
     return true;
 }
-bool QRFactorization::InverseIterator(const Eigen::MatrixXd& squaredMatrix,Eigen::MatrixXd::value_type eigenValue,Eigen::VectorXd& eigenVector){
+bool QRFactorization::InverseIterator(const Eigen::MatrixXd& squaredMatrix,Eigen::MatrixXd::value_type eigenValue,Eigen::VectorXd& eigenVector,double eps){
     size_t rows,cols,size;
     rows = squaredMatrix.rows();
     cols = squaredMatrix.cols();
@@ -547,19 +565,27 @@ bool QRFactorization::InverseIterator(const Eigen::MatrixXd& squaredMatrix,Eigen
         return false;
     }
     size = rows;
-    eigenVector = VectorXd::Random(size,1);
-    VectorXd last = VectorXd::Random(size,1);
-    Eigen::FullPivLU<MatrixXd> lu(squaredMatrix-eigenValue*MatrixXd::Identity(size,size));
-    size_t current=0,total=size*size;
-    while( (current++<total)&&  (((last-eigenVector).cwiseAbs().maxCoeff()>dZero) && ((last+eigenVector).cwiseAbs().maxCoeff()>dZero)) ){
-        last = eigenVector;
-        eigenVector = lu.solve(eigenVector);
-        eigenVector.normalize();
+    VectorXd xk1 = VectorXd::Random(size,1).normalized();
+    VectorXd xk = VectorXd::Random(size,1).normalized();
+    VectorXd yk1;
+
+    double wk = 0;
+    double wk1 = 1;
+    Eigen::FullPivLU<MatrixXd> lu(squaredMatrix);
+    MatrixXd  mat = lu.inverse();
+    size_t current=0,total=size*size*10;
+    double s=0;
+    while( (current++<total)&&  std::abs(wk-wk1)>eps){
+        xk=xk1;
+        yk1 = mat*xk;
+        xk1 =(1/yk1.norm())* yk1;
+        wk = wk1;
+        wk1 = (yk1.dot(xk))/ (xk.dot(xk));
+        s = std::abs(wk-wk1);
+        std::cout<<"s:"<<s<<" xk1: == "<< xk1.transpose() <<" ==lam:"<<eigenValue<<endl;
+
     }
-    if(current>=total){
-        std::cout<<"last:\n"<<last.transpose()<<endl;
-        std::cout<<"evec:\n"<<eigenVector.transpose()<<endl;
-        return false;
-    }
+    eigenVector = xk1;
+    std::cout<<"ans:"<<eigenVector.transpose()<<endl;
     return true;
 }
